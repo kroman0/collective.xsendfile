@@ -2,8 +2,9 @@
 
     Monkey-patch ZODB to support blob storage FS permissios
     which allows reading them by Apache.
-    
-    http://stackoverflow.com/questions/6168566/collective-xsendfile-zodb-blobs-and-unix-file-permissions/6169177#6169177
+
+    http://stackoverflow.com/questions/6168566/
+    collective-xsendfile-zodb-blobs-and-unix-file-permissions/6169177#6169177
 
 """
 
@@ -12,10 +13,10 @@ from ZODB import utils
 from ZODB.blob import FilesystemHelper, BlobStorageMixin
 from ZODB.blob import log, LAYOUT_MARKER
 
+
 class GroupReadableFilesystemHelper(FilesystemHelper):
-   
+
     def create(self):
-        import pdb ; pdb.set_trace()
         if not os.path.exists(self.base_dir):
             os.makedirs(self.base_dir, 0750)
             log("Blob directory '%s' does not exist. "
@@ -34,8 +35,8 @@ class GroupReadableFilesystemHelper(FilesystemHelper):
                           ).read().strip()
             if layout != self.layout_name:
                 raise ValueError(
-                    "Directory layout `%s` selected for blob directory %s, but "
-                    "marker found for layout `%s`" %
+                    "Directory layout `%s` selected for blob directory %s, "
+                    "but marker found for layout `%s`" %
                     (self.layout_name, self.base_dir, layout))
 
     def isSecure(self, path):

@@ -28,6 +28,24 @@
       original="index_html"
       replacement=".utils.index_html"
       />
+  <monkey:patch
+      description="Add support for XSendfile for scales"
+      class="plone.app.blob.scale.BlobImageScaleHandler"
+      original="retrieveScale"
+      replacement=".utils.retrieveScale"
+      />
+  <monkey:patch
+      description="Add support for XSendfile for new scales"
+      class="plone.app.imaging.scaling.ImageScaling"
+      original="make"
+      replacement=".utils.make"
+      />
+  <monkey:patch
+      description="Add support for XSendfile for new scales"
+      class="plone.app.imaging.scale.ImageScale"
+      original="index_html"
+      replacement=".utils.ImageScale_index_html"
+      />
 
   <genericsetup:registerProfile
       name="default"
