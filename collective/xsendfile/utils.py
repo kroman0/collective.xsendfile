@@ -122,8 +122,8 @@ def ImageScale_index_html(self):
         header_value = contentDispositionHeader(disposition=disposition,
                                                 filename=filename)
         RESPONSE.setHeader("Content-disposition", header_value)
-
-    file_path = self.blobfile
+   
+    file_path = getattr(self, 'blobfile', None)
 
     RESPONSE.setHeader('Last-Modified', rfc1123_date(instance._p_mtime))
     RESPONSE.setHeader("Content-Length", self.size)
@@ -135,7 +135,7 @@ def ImageScale_index_html(self):
         pathregex_substitute = settings.xsendfile_pathregex_substitute
         enable_fallback = settings.xsendfile_enable_fallback
 
-        if responseheader and pathregex_substitute:
+        if responseheader and pathregex_substitute and file_path:
             file_path = re.sub(pathregex_search, pathregex_substitute,
                                file_path)
 
@@ -151,10 +151,10 @@ def ImageScale_index_html(self):
         # Not yet installed through add-on installer
         fallback = True
 
-    if fallback:
+    if fallback or not file_path:
         logger.warn("Falling back to sending object %s.%s via Zope" % \
                     (repr(instance), repr(self)))
-        return openBlob(self.blob).read()
+        return getattr(self, 'blob', None) and openBlob(self.blob).read() or self.data
     else:
         logger.debug("Sending object %s.%s with xsendfile header %s, path: "
                      "%s" % (repr(instance), repr(self),
