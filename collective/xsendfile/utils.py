@@ -32,7 +32,7 @@ def index_html(self, instance=None, REQUEST=None, RESPONSE=None,
     try:
         registry = getUtility(IRegistry)
         settings = registry.forInterface(IxsendfileSettings)
-    except ComponentLookupError:
+    except (ComponentLookupError, KeyError):
         # This happens when collective.xsendfile egg is in place
         # but add-on installer has not been run yet
         settings = None
@@ -101,7 +101,7 @@ def ImageScale_index_html(self):
     try:
         registry = getUtility(IRegistry)
         settings = registry.forInterface(IxsendfileSettings)
-    except ComponentLookupError:
+    except (ComponentLookupError, KeyError):
         # This happens when collective.xsendfile egg is in place
         # but add-on installer has not been run yet
         settings = None
