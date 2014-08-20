@@ -9,7 +9,7 @@ from ZODB.interfaces import IBlob
 from collective.xsendfile.interfaces import IxsendfileSettings
 from plone.app.blob.config import blobScalesAttr
 from plone.app.blob.utils import openBlob
-from plone.app.imaging.traverse import ImageScale
+from plone.app.imaging.scale import ImageScale
 from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
 from plone.registry.interfaces import IRegistry
 from z3c.form.interfaces import IDataManager
@@ -212,7 +212,7 @@ def ImageScale_index_html(self):
 
     blob = getattr(self, 'blob', None)
     if not blob:
-        return self._old_index_html()
+        return super(ImageScale, self).index_html()
 
     REQUEST = None
     RESPONSE = None
@@ -233,7 +233,7 @@ def ImageScale_index_html(self):
         RESPONSE.setHeader('Content-Type', self.content_type)
         return 'collective.xsendfile - proxy missing?'
     else:
-        return self._old_index_html()
+        return super(ImageScale, self).index_html()
 
 
 def retrieveScale(self, instance, scale):
