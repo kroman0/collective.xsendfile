@@ -4,15 +4,14 @@
 """
 from Acquisition import aq_base
 from Acquisition import aq_inner
-# from Products.Archetypes.utils import contentDispositionHeader
+from Products.Archetypes.utils import contentDispositionHeader
 from ZODB.interfaces import IBlob
 from collective.xsendfile.interfaces import IxsendfileSettings
 from plone.app.blob.config import blobScalesAttr
 from plone.app.blob.utils import openBlob
 from plone.app.imaging.traverse import ImageScale
-# from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
+from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
 from plone.registry.interfaces import IRegistry
-# from webdav.common import rfc1123_date
 from z3c.form.interfaces import IDataManager
 from zope.component import getMultiAdapter
 from zope.component import getUtility
@@ -215,27 +214,23 @@ def ImageScale_index_html(self):
     if not blob:
         return self._old_index_html()
 
-    # instance = self.aq_parent
-    # disposition = 'inline'
     REQUEST = None
     RESPONSE = None
     if REQUEST is None:
         REQUEST = self.REQUEST
     if RESPONSE is None:
         RESPONSE = REQUEST.RESPONSE
-    # filename = self.filename
-    # if filename is not None:
-        # filename = IUserPreferredFileNameNormalizer(REQUEST).normalize(
-        # unicode(filename, self.getCharset()))
-        # header_value = contentDispositionHeader(disposition=disposition,
-        # filename=filename)
-        # RESPONSE.setHeader('Content-disposition', header_value)
-
-    # RESPONSE.setHeader('Last-Modified', rfc1123_date(instance._p_mtime))
-    # RESPONSE.setHeader('Content-Length', self.size)
-    # RESPONSE.setHeader('Content-Type', self.content_type)
 
     if set_xsendfile_header(REQUEST, RESPONSE, blob):
+        filename = self.filename
+        if self.filename is not None:
+            normalizer = IUserPreferredFileNameNormalizer(REQUEST)
+            filename = normalizer.normalize(unicode(self.filename,
+                                                    self.getCharset()))
+            header_value = contentDispositionHeader(disposition='inline',
+                                                    filename=filename)
+            RESPONSE.setHeader('Content-disposition', header_value)
+        RESPONSE.setHeader('Content-Type', self.content_type)
         return 'collective.xsendfile - proxy missing?'
     else:
         return self._old_index_html()
