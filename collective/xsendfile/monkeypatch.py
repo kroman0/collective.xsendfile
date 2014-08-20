@@ -8,12 +8,12 @@
 
 """
 
-import os
 from ZODB import utils
-from ZODB.blob import FilesystemHelper
 from ZODB.blob import BlobStorageMixin
+from ZODB.blob import FilesystemHelper
 from ZODB.blob import LAYOUT_MARKER
 from ZODB.blob import log
+import os
 
 
 class GroupReadableFilesystemHelper(FilesystemHelper):

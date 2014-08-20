@@ -2,25 +2,24 @@
 """
     XSendFile download support for BLOBs
 """
-import logging
-import re
-import os
-
-from ZODB.interfaces import IBlob
-from zope.component import getUtility
-from plone.registry.interfaces import IRegistry
-from Acquisition import aq_inner
-from zope.publisher.interfaces import NotFound
-from zope.component import getMultiAdapter
-from z3c.form.interfaces import IDataManager
-from collective.xsendfile.interfaces import IxsendfileSettings
 from Acquisition import aq_base
+from Acquisition import aq_inner
+# from Products.Archetypes.utils import contentDispositionHeader
+from ZODB.interfaces import IBlob
+from collective.xsendfile.interfaces import IxsendfileSettings
 from plone.app.blob.config import blobScalesAttr
 from plone.app.blob.utils import openBlob
 from plone.app.imaging.traverse import ImageScale
-from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
-from webdav.common import rfc1123_date
-from Products.Archetypes.utils import contentDispositionHeader
+# from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
+from plone.registry.interfaces import IRegistry
+# from webdav.common import rfc1123_date
+from z3c.form.interfaces import IDataManager
+from zope.component import getMultiAdapter
+from zope.component import getUtility
+from zope.publisher.interfaces import NotFound
+import logging
+import os
+import re
 
 try:
     from plone.namedfile.utils import set_headers
@@ -212,62 +211,34 @@ if HAS_NAMEDFILE:
 def ImageScale_index_html(self):
     """ Inject X-Sendfile and X-Accel-Redirect headers into response. """
 
-    settings = get_settings()
+    blob = getattr(self, 'blob', None)
+    if not blob:
+        return self._old_index_html()
 
-    instance = self.aq_parent
-    disposition = 'inline'
+    # instance = self.aq_parent
+    # disposition = 'inline'
     REQUEST = None
     RESPONSE = None
     if REQUEST is None:
         REQUEST = self.REQUEST
     if RESPONSE is None:
         RESPONSE = REQUEST.RESPONSE
-    filename = self.filename
-    if filename is not None:
-        filename = IUserPreferredFileNameNormalizer(REQUEST).normalize(
-            unicode(filename, self.getCharset()))
-        header_value = contentDispositionHeader(disposition=disposition,
-                                                filename=filename)
-        RESPONSE.setHeader('Content-disposition', header_value)
+    # filename = self.filename
+    # if filename is not None:
+        # filename = IUserPreferredFileNameNormalizer(REQUEST).normalize(
+        # unicode(filename, self.getCharset()))
+        # header_value = contentDispositionHeader(disposition=disposition,
+        # filename=filename)
+        # RESPONSE.setHeader('Content-disposition', header_value)
 
-    file_path = getattr(self, 'blobfile', None)
+    # RESPONSE.setHeader('Last-Modified', rfc1123_date(instance._p_mtime))
+    # RESPONSE.setHeader('Content-Length', self.size)
+    # RESPONSE.setHeader('Content-Type', self.content_type)
 
-    RESPONSE.setHeader('Last-Modified', rfc1123_date(instance._p_mtime))
-    RESPONSE.setHeader('Content-Length', self.size)
-    RESPONSE.setHeader('Content-Type', self.content_type)
-
-    if settings is not None:
-        responseheader = settings.xsendfile_responseheader
-        pathregex_search = settings.xsendfile_pathregex_search
-        pathregex_substitute = settings.xsendfile_pathregex_substitute
-        enable_fallback = settings.xsendfile_enable_fallback
-
-        if responseheader and pathregex_substitute and file_path:
-            file_path = re.sub(pathregex_search, pathregex_substitute,
-                               file_path)
-
-        fallback = False
-        if not responseheader:
-            fallback = True
-            logger.warn('No front end web server type selected')
-        if enable_fallback:
-            if (not REQUEST.get('HTTP_X_FORWARDED_FOR')):
-                fallback = True
-
-    else:
-        # Not yet installed through add-on installer
-        fallback = True
-
-    if fallback or not file_path:
-        logger.warn('Falling back to sending object %s.%s via Zope'
-                    '' % (repr(instance), repr(self)))
-        return getattr(self, 'blob', None) and openBlob(self.blob).read() or self.data
-    else:
-        logger.debug('Sending object %s.%s with xsendfile header %s, path: '
-                     '%s' % (repr(instance), repr(self),
-                             repr(responseheader), repr(file_path)))
-        RESPONSE.setHeader(responseheader, file_path)
+    if set_xsendfile_header(REQUEST, RESPONSE, blob):
         return 'collective.xsendfile - proxy missing?'
+    else:
+        return self._old_index_html()
 
 
 def retrieveScale(self, instance, scale):
@@ -288,8 +259,8 @@ def retrieveScale(self, instance, scale):
         # objects, so we could use something like:
         #   ImageScale(..., data=blob.getIterator(), ...)
         # but it uses `len(data)`, so we'll stick with a string for now
-        image = ImageScale(data['id'], data=blob.read(), blobfile=blob.name,
-                           blob=data['blob'], filename=data['filename'],
+        image = ImageScale(data['id'], data=blob.read(), blob=data['blob'],
+                           filename=data['filename'],
                            content_type=data['content_type'])
         blob.close()
         return image.__of__(instance)
@@ -301,9 +272,6 @@ def make(self, info):
     mimetype = info['mimetype']
     info['content_type'] = mimetype
     info['filename'] = self.context.getFilename()
-    blob = openBlob(info['data'])
-    info['blobfile'] = blob.name
-    blob.close()
     info['blob'] = info['data']
     scale = ImageScale(info['uid'], **info)
     scale.size = len(scale.data)
