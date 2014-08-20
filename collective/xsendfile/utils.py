@@ -207,19 +207,17 @@ if HAS_NAMEDFILE:
 # looks very hard however since scales currently use Image class
 # which reads sizes from the data which kind of defeats the purpose
 
-def ImageScale_index_html(self):
+def ImageScale_index_html(self, REQUEST=None, RESPONSE=None):
     """ Inject X-Sendfile and X-Accel-Redirect headers into response. """
 
-    blob = getattr(self, 'blob', None)
-    if not blob:
-        return super(ImageScale, self).index_html()
-
-    REQUEST = None
-    RESPONSE = None
     if REQUEST is None:
         REQUEST = self.REQUEST
     if RESPONSE is None:
         RESPONSE = REQUEST.RESPONSE
+
+    blob = getattr(self, 'blob', None)
+    if not blob:
+        return super(ImageScale, self).index_html(REQUEST, RESPONSE)
 
     if set_xsendfile_header(REQUEST, RESPONSE, blob):
         filename = self.filename
@@ -233,7 +231,7 @@ def ImageScale_index_html(self):
         RESPONSE.setHeader('Content-Type', self.content_type)
         return 'collective.xsendfile - proxy missing?'
     else:
-        return super(ImageScale, self).index_html()
+        return super(ImageScale, self).index_html(REQUEST, RESPONSE)
 
 
 def retrieveScale(self, instance, scale):
