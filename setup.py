@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.1b1'
+version = '1.1b2'
 
 setup(name='collective.xsendfile',
       version=version,
@@ -29,8 +29,14 @@ setup(name='collective.xsendfile',
           'collective.monkeypatcher',
           'plone.app.registry',
           'plone.registry',
-          'z3c.form',
+          # 'z3c.form',
       ],
+      extras_require={
+          'test': [
+              'plone.app.testing',
+              'plone.app.robotframework'
+          ],
+      },
       entry_points="""
       # -*- Entry points: -*-
       [z3c.autoinclude.plugin]
