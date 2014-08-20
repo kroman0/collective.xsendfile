@@ -16,7 +16,6 @@ from ZODB.blob import LAYOUT_MARKER
 from ZODB.blob import log
 
 
-
 class GroupReadableFilesystemHelper(FilesystemHelper):
 
     def create(self):

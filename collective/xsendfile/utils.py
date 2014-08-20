@@ -14,6 +14,13 @@ from zope.publisher.interfaces import NotFound
 from zope.component import getMultiAdapter
 from z3c.form.interfaces import IDataManager
 from collective.xsendfile.interfaces import IxsendfileSettings
+from Acquisition import aq_base
+from plone.app.blob.config import blobScalesAttr
+from plone.app.blob.utils import openBlob
+from plone.app.imaging.traverse import ImageScale
+from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
+from webdav.common import rfc1123_date
+from Products.Archetypes.utils import contentDispositionHeader
 
 try:
     from plone.namedfile.utils import set_headers
@@ -201,14 +208,6 @@ if HAS_NAMEDFILE:
 # need a better version of ImageScale that doesn't open the blob
 # looks very hard however since scales currently use Image class
 # which reads sizes from the data which kind of defeats the purpose
-from Acquisition import aq_base
-from plone.app.blob.config import blobScalesAttr
-from plone.app.blob.utils import openBlob
-from plone.app.imaging.traverse import ImageScale
-from plone.i18n.normalizer.interfaces import IUserPreferredFileNameNormalizer
-from webdav.common import rfc1123_date
-from Products.Archetypes.utils import contentDispositionHeader
-
 
 def ImageScale_index_html(self):
     """ Inject X-Sendfile and X-Accel-Redirect headers into response. """
@@ -229,12 +228,12 @@ def ImageScale_index_html(self):
             unicode(filename, self.getCharset()))
         header_value = contentDispositionHeader(disposition=disposition,
                                                 filename=filename)
-        RESPONSE.setHeader("Content-disposition", header_value)
+        RESPONSE.setHeader('Content-disposition', header_value)
 
     file_path = getattr(self, 'blobfile', None)
 
     RESPONSE.setHeader('Last-Modified', rfc1123_date(instance._p_mtime))
-    RESPONSE.setHeader("Content-Length", self.size)
+    RESPONSE.setHeader('Content-Length', self.size)
     RESPONSE.setHeader('Content-Type', self.content_type)
 
     if settings is not None:
@@ -250,7 +249,7 @@ def ImageScale_index_html(self):
         fallback = False
         if not responseheader:
             fallback = True
-            logger.warn("No front end web server type selected")
+            logger.warn('No front end web server type selected')
         if enable_fallback:
             if (not REQUEST.get('HTTP_X_FORWARDED_FOR')):
                 fallback = True
@@ -260,15 +259,15 @@ def ImageScale_index_html(self):
         fallback = True
 
     if fallback or not file_path:
-        logger.warn("Falling back to sending object %s.%s via Zope"
-                    "" % (repr(instance), repr(self)))
+        logger.warn('Falling back to sending object %s.%s via Zope'
+                    '' % (repr(instance), repr(self)))
         return getattr(self, 'blob', None) and openBlob(self.blob).read() or self.data
     else:
-        logger.debug("Sending object %s.%s with xsendfile header %s, path: "
-                     "%s" % (repr(instance), repr(self),
+        logger.debug('Sending object %s.%s with xsendfile header %s, path: '
+                     '%s' % (repr(instance), repr(self),
                              repr(responseheader), repr(file_path)))
         RESPONSE.setHeader(responseheader, file_path)
-        return "collective.xsendfile - proxy missing?"
+        return 'collective.xsendfile - proxy missing?'
 
 
 def retrieveScale(self, instance, scale):
