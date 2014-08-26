@@ -24,7 +24,7 @@ class BlobTestCase(unittest.TestCase):
 
     def tearDown(self):
         for i in ['XSENDFILE_RESPONSEHEADER', 'XSENDFILE_PATHREGEX_SUBSTITUTE',
-                  'XSENDFILE_PATHREGEX_SEARCH', 'XSENDFILE_ENABLE_FALLBACK',]:
+                  'XSENDFILE_PATHREGEX_SEARCH', 'XSENDFILE_ENABLE_FALLBACK']:
             if os.environ.get(i):
                 del os.environ[i]
 
@@ -32,7 +32,6 @@ class BlobTestCase(unittest.TestCase):
         pass
 
     def test_plone_app_blob_BlobImageScaleHandler_retrieveScale(self):
-        request = self.portal.REQUEST
         image = self.portal['image'].unrestrictedTraverse('image_mini')
         self.assertTrue(image.blob is not None)
 
