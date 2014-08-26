@@ -1,7 +1,11 @@
 .. contents::
 
-.. image:: https://secure.travis-ci.org/collective/collective.xsendfile.png
-    :target: http://travis-ci.org/collective/collective.xsendfile
+.. image:: https://secure.travis-ci.org/kroman0/collective.xsendfile.png
+    :target: http://travis-ci.org/kroman0/collective.xsendfile
+
+.. image:: https://coveralls.io/repos/kroman0/collective.xsendfile/badge.png?branch=master
+     :target: https://coveralls.io/r/kroman0/collective.xsendfile?branch=master
+
 
 Introduction
 ==============
