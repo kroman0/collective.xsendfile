@@ -82,6 +82,8 @@ def set_xsendfile_header(request, response, blob):
     #    blob = self.getUnwrapped(instance, raw=True)    # TODO: why 'raw'?
 
     settings = get_settings()
+    if not settings:
+        return False
     responseheader = settings.xsendfile_responseheader
     pathregex_search = settings.xsendfile_pathregex_search
     pathregex_substitute = settings.xsendfile_pathregex_substitute
