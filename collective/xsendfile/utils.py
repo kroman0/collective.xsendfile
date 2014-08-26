@@ -47,19 +47,16 @@ def get_settings():
         settings.xsendfile_pathregex_search = os.environ.get('XSENDFILE_PATHREGEX_SEARCH', r'(.*)')
         settings.xsendfile_pathregex_substitute = os.environ.get('XSENDFILE_PATHREGEX_SUBSTITUTE',
                                                                  r'\1')
-        return settings
     else:
         try:
             registry = getUtility(IRegistry)
             settings = registry.forInterface(IxsendfileSettings)
-            return settings
         except KeyError:
             # This happens when collective.xsendfile egg is in place
             # but add-on installer has not been run yet
             settings = None
             logger.warn('Could not load collective.xsendfile settings')
-    # Not yet installed through add-on installer
-    return None
+    return settings
 
 
 def get_file(blob):

@@ -1,0 +1,5 @@
+[report]
+include = 
+    collective/xsendfile/*
+omit =
+    collective/xsendfile/tests/*

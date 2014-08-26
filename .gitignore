@@ -48,3 +48,5 @@ include/
 lib/
 src/
 var/
+buildout-cache/
+htmlcov/

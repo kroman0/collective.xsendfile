@@ -22,8 +22,43 @@ class BlobTestCase(unittest.TestCase):
         self.portal = self.layer['portal']
         self.request = self.layer['request']
 
+    def tearDown(self):
+        for i in ['XSENDFILE_RESPONSEHEADER', 'XSENDFILE_PATHREGEX_SUBSTITUTE',
+                  'XSENDFILE_PATHREGEX_SEARCH', 'XSENDFILE_ENABLE_FALLBACK',]:
+            if os.environ.get(i):
+                del os.environ[i]
+
     def _traverse(self, path):
         pass
+
+    def test_plone_app_blob_BlobImageScaleHandler_retrieveScale(self):
+        request = self.portal.REQUEST
+        image = self.portal['image'].unrestrictedTraverse('image_mini')
+        self.assertTrue(image.blob is not None)
+
+    def test_plone_app_imaging_image_scale(self):
+        request = self.portal.REQUEST
+        view = self.portal['image'].unrestrictedTraverse('@@images')
+        image = view.scale('image', 'mini')
+
+        # Rewrap image scale to leave out the image class
+        # implementation. We do this to test the situation where we do
+        # not have class-supported publishing (e.g. with schema
+        # extension).
+        image = image.aq_base.__of__(self.portal)
+
+        adapter = DefaultPublishTraverse(image, request)
+        ob2 = adapter.publishTraverse(request, 'index_html')
+
+        os.environ['XSENDFILE_RESPONSEHEADER'] = 'X-SENDFILE'
+        request.set('HTTP_X_FORWARDED_FOR', '0.0.0.0')
+
+        ob2()
+        content_type = request.RESPONSE.getHeader('content-type')
+        self.assertEqual(content_type, 'image/jpeg')
+
+        xsendfile = request.RESPONSE.getHeader('X-SENDFILE')
+        self.assertTrue(xsendfile is not None)
 
     def test_plone_app_blob_image(self):
         request = self.portal.REQUEST
@@ -77,7 +112,7 @@ class BlobTestCase(unittest.TestCase):
     def test_fallback(self):
         request = self.portal.REQUEST
         os.environ['XSENDFILE_RESPONSEHEADER'] = 'X-SENDFILE'
-        os.environ["XSENDFILE_ENABLE_FALLBACK"] = 'True'
+        os.environ['XSENDFILE_ENABLE_FALLBACK'] = 'True'
         view = self.portal['file']
         view.index_html(request, request.RESPONSE)
 
